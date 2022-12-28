@@ -5,4 +5,4 @@ svsw_allowedranks = {
     ["superadmin"] = true,
 }
 
-svsw_serverIP = "84.200.229.3:27056"
+svsw_serverIP = ""
