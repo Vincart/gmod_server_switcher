@@ -113,7 +113,6 @@ concommand.Add("eventinviteopen", function()
     AbbortButton:SetWide(200)
     AbbortButton:SetText("Abbrechen")
     AbbortButton.DoClick = function()
-        InviteToEventserver()
         mainframe:Close()
     end
 
