@@ -45,7 +45,7 @@ net.Receive("Eventserveranfrage", function()
         draw.SimpleText("Annehmen", "Dev-Fond2", w * .5, h * .5, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
     InviteAccept.DoClick = function()
-        LocalPlayer():ConCommand("connect " .. serverIP)
+        permissions.AskToConnect(serverIP)
         InviteMain:Remove()
     end
 
