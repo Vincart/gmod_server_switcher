@@ -1,14 +1,23 @@
-surface.CreateFont("Dev-Fond", {
+surface.CreateFont("Dev-Font", {
     font = "CloseCaption_Bold",
     size = 40,
     weight = 500,
 } )
 
-surface.CreateFont("Dev-Fond2", {
+surface.CreateFont("Dev-Font2", {
     font = "CloseCaption_Bold",
     size = 25,
     weight = 500,
 } )
+
+local colorTable = {
+    ["dark"] = Color(31, 31, 31),
+    ["dark_grey"] = Color(44, 44, 44),
+    ["grey"] = Color(48, 48, 48),
+    ["light_grey"] = Color(50, 50, 50),
+    ["green"] = Color(0, 255, 0),
+    ["red"] = Color(255, 0, 0),
+}
 
 net.Receive("Eventserveranfrage", function()
     local serverIP = net.ReadString()
@@ -18,16 +27,16 @@ net.Receive("Eventserveranfrage", function()
     InviteMain:Center()
     InviteMain:MakePopup()
     InviteMain.Paint = function(self, w, h)
-        draw.RoundedBox(5, 0, 0, w, h, Color(31, 31, 31))
-        draw.SimpleText("Möchtest du auf den Eventserver wechseln?", "Dev-Fond2", w * .5, 125, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+        draw.RoundedBox(5, 0, 0, w, h, colorTable.dark)
+        draw.SimpleText("Möchtest du auf den Eventserver wechseln?", "Dev-Font2", w * .5, 125, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
     end
 
     local HeadLinePanel = vgui.Create("DPanel", InviteMain)
     HeadLinePanel:Dock(TOP)
     HeadLinePanel:SetTall(45)
     HeadLinePanel.Paint = function(self, w, h)
-        draw.RoundedBox(5, 0, 0, w, h, Color(48, 48, 48))
-        draw.SimpleText("Eventserveranfrage", "Dev-Fond", w * .5, 0, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+        draw.RoundedBox(5, 0, 0, w, h, colorTable.grey)
+        draw.SimpleText("Eventserveranfrage", "Dev-Font", w * .5, 0, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
     end
 
     local BottomPanel = vgui.Create("Panel", InviteMain)
@@ -41,12 +50,12 @@ net.Receive("Eventserveranfrage", function()
     InviteAccept:SetTall(55)
     InviteAccept:SetWide(250)
     InviteAccept.Paint = function(self, w, h)
-        draw.RoundedBox(0, 0, 0, w, h, Color(0, 255, 0))
-        draw.SimpleText("Annehmen", "Dev-Fond2", w * .5, h * .5, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.RoundedBox(0, 0, 0, w, h, colorTable.green)
+        draw.SimpleText("Annehmen", "Dev-Font2", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
     InviteAccept.DoClick = function()
         permissions.AskToConnect(serverIP)
-        InviteMain:Remove()
+        InviteMain:Close()
     end
 
     local InviteDenie = vgui.Create("DButton",BottomPanel)
@@ -55,23 +64,22 @@ net.Receive("Eventserveranfrage", function()
     InviteDenie:SetTall(55)
     InviteDenie:SetWide(250)
     InviteDenie.Paint = function(self, w, h)
-        draw.RoundedBox(0, 0, 0, w, h, Color(255, 0, 0))
-        draw.SimpleText("Ablehnen", "Dev-Fond2", w * .5, h * .5, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.RoundedBox(0, 0, 0, w, h, colorTable.red)
+        draw.SimpleText("Ablehnen", "Dev-Font2", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
     InviteDenie.DoClick = function()
-        InviteMain:Remove()
+        InviteMain:Close()
     end
 end)
 
 concommand.Add("eventinviteopen", function()
-
     local mainframe = vgui.Create("DFrame")
     mainframe:SetSize(ScrW() * .4, ScrH() * .5)
     mainframe:Center()
     mainframe:MakePopup()
     mainframe:SetMouseInputEnabled(true)
     mainframe.Paint = function(self, w, h)
-        draw.RoundedBox(5, 0, 0, w, h, Color(50, 50, 50))
+        draw.RoundedBox(5, 0, 0, w, h, colorTable.light_grey)
     end
 
     local PlayerList = vgui.Create("DListView", mainframe)
@@ -79,7 +87,14 @@ concommand.Add("eventinviteopen", function()
     PlayerList:DockMargin(0, 0, 0, 25)
     PlayerList:AddColumn("Spieler")
     PlayerList.Paint = function(self, w, h)
-        draw.RoundedBox(0, 0, 0, w, h, Color(44, 44, 44))
+        draw.RoundedBox(0, 0, 0, w, h, colorTable.dark_grey)
+    end
+
+    local lines = {}
+
+    for k, v in ipairs(player.GetAll()) do
+        local line = PlayerList:AddLine(v:GetName())
+        lines[line] = ply
     end
 
     local ButtonPanel = vgui.Create("Panel", mainframe)
@@ -93,10 +108,8 @@ concommand.Add("eventinviteopen", function()
     InviteButton:SetText("Senden")
     InviteButton.DoClick = function()
         local tbl = {}
-        for k, v in pairs(PlayerList:GetLines()) do
-            if v:IsLineSelected() then
-                table.insert(tbl, v.ply)
-            end
+        for k, v in pairs(PlayerList:GetSelected()) do
+            table.insert(tbl, lines[v])
         end
         net.Start("Eventserveranfrage")
         net.WriteUInt(#tbl, 7)
@@ -107,17 +120,12 @@ concommand.Add("eventinviteopen", function()
         mainframe:Close()
     end
 
-    local AbbortButton = vgui.Create("DButton", ButtonPanel)
-    AbbortButton:Dock(LEFT)
-    AbbortButton:SetTall(50)
-    AbbortButton:SetWide(200)
-    AbbortButton:SetText("Abbrechen")
-    AbbortButton.DoClick = function()
+    local AbortButton = vgui.Create("DButton", ButtonPanel)
+    AbortButton:Dock(LEFT)
+    AbortButton:SetTall(50)
+    AbortButton:SetWide(200)
+    AbortButton:SetText("Abbrechen")
+    AbortButton.DoClick = function()
         mainframe:Close()
-    end
-
-    for k, v in pairs(player.GetAll()) do
-         local line = PlayerList:AddLine(v:GetName())
-         line.ply = v
     end
 end)
