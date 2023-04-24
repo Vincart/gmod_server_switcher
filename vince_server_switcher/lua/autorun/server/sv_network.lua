@@ -10,8 +10,8 @@ net.Receive("Eventserveranfrage", function(len, ply)
     local tableLength = net.ReadUInt(7)
 
     for i = 1, tableLength do
-        local playerr = net.ReadEntity()
-        table.insert(players, playerr)
+        local pl = net.ReadEntity()
+        table.insert(players, pl)
     end
 
     net.Start("Eventserveranfrage")
